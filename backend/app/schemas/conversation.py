@@ -32,9 +32,11 @@ class ConversationResponse(BaseModel):
 class GroupCreate(BaseModel):
     name: str
     participant_ids: List[str]
+    avatar_url: Optional[str] = None
 
 class GroupUpdate(BaseModel):
     name: Optional[str] = None
+    avatar_url: Optional[str] = None
     add_participant_ids: Optional[List[str]] = None
     remove_participant_ids: Optional[List[str]] = None
 

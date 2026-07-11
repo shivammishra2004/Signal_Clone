@@ -26,6 +26,7 @@ class ConnectionManager:
         if is_new_user:
             # User just came online
             await self._update_presence(user_id, is_online=True)
+            await self._mark_pending_messages_delivered(user_id)
 
     async def disconnect(self, user_id: str, websocket: WebSocket):
         if user_id in self.active_connections:
@@ -49,10 +50,15 @@ class ConnectionManager:
                 db.add(user)
                 await db.commit()
                 
-            # Broadcast to contacts (and maybe groups, but contacts is simpler and usually correct)
-            # Find all users who have this user as a contact
-            result = await db.execute(select(Contact).filter(Contact.contact_user_id == user_id))
-            contacts = result.scalars().all()
+            # Find all users who share a conversation with this user
+            result = await db.execute(
+                select(ConversationParticipant.user_id)
+                .filter(ConversationParticipant.conversation_id.in_(
+                    select(ConversationParticipant.conversation_id)
+                    .filter(ConversationParticipant.user_id == user_id)
+                ))
+            )
+            shared_users = set(result.scalars().all())
             
             # Send presence update event
             event = {
@@ -64,8 +70,39 @@ class ConnectionManager:
                 }
             }
             
-            for c in contacts:
-                await self.send_to_user(c.owner_id, event)
+            for su_id in shared_users:
+                if su_id != user_id:
+                    await self.send_to_user(su_id, event)
+
+    async def _mark_pending_messages_delivered(self, user_id: str):
+        from app.models.message import Message
+        async with AsyncSessionLocal() as db:
+            res = await db.execute(select(ConversationParticipant).filter(ConversationParticipant.user_id == user_id))
+            participants = res.scalars().all()
+            
+            for p in participants:
+                msg_res = await db.execute(
+                    select(Message.id)
+                    .filter(Message.conversation_id == p.conversation_id)
+                    .filter(Message.sender_id != user_id)
+                    .order_by(Message.id.desc())
+                    .limit(1)
+                )
+                latest_msg_id = msg_res.scalar()
+                if latest_msg_id:
+                    if not p.last_delivered_message_id or latest_msg_id > p.last_delivered_message_id:
+                        p.last_delivered_message_id = latest_msg_id
+                        db.add(p)
+                        event = {
+                            "type": "message.delivered",
+                            "payload": {
+                                "message_id": latest_msg_id,
+                                "user_id": user_id,
+                                "conversation_id": p.conversation_id
+                            }
+                        }
+                        await self.send_to_conversation(p.conversation_id, event, exclude_user_id=user_id)
+            await db.commit()
 
     async def send_to_user(self, user_id: str, event: dict):
         if user_id in self.active_connections:

@@ -17,6 +17,7 @@ interface Props {
 
 export function CreateGroupModal({ onClose, onCreated }: Props) {
   const [groupName, setGroupName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
@@ -55,10 +56,12 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
     
     setIsLoading(true);
     try {
-      const conv = await api.post('/conversations/group', {
+      const payload: any = {
         name: groupName.trim(),
         participant_ids: selectedUsers.map(u => u.id)
-      });
+      };
+      if (avatarUrl.trim()) payload.avatar_url = avatarUrl.trim();
+      const conv = await api.post('/conversations/group', payload);
       onCreated(conv);
       onClose();
     } catch (err: any) {
@@ -99,6 +102,21 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               placeholder="e.g. Project Titan"
               value={groupName}
               onChange={e => setGroupName(e.target.value)}
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {/* Avatar URL */}
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>
+              Avatar URL (Optional)
+            </label>
+            <input
+              className="input-field"
+              type="url"
+              placeholder="https://example.com/group.png"
+              value={avatarUrl}
+              onChange={e => setAvatarUrl(e.target.value)}
               style={{ width: '100%', boxSizing: 'border-box' }}
             />
           </div>

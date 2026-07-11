@@ -318,3 +318,34 @@ async def mark_read(
     }
     await manager.send_to_conversation(conversation_id, event, exclude_user_id=current_user.id)
     return {"status": "success"}
+
+@router.post("/{conversation_id}/delivered")
+async def mark_delivered(
+    conversation_id: str,
+    data: ReadReceiptRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    res = await db.execute(
+        select(ConversationParticipant)
+        .filter(ConversationParticipant.conversation_id == conversation_id)
+        .filter(ConversationParticipant.user_id == current_user.id)
+    )
+    participant = res.scalars().first()
+    if not participant:
+        raise HTTPException(status_code=403, detail="Not a participant")
+
+    # Only update delivered if it doesn't downgrade read status
+    # Assuming message ids are lexicographically sortable by time
+    if not participant.last_delivered_message_id or data.message_id > participant.last_delivered_message_id:
+        participant.last_delivered_message_id = data.message_id
+        db.add(participant)
+        await db.commit()
+
+        event = {
+            "type": "message.delivered",
+            "payload": {"conversation_id": conversation_id, "message_id": data.message_id, "user_id": current_user.id}
+        }
+        await manager.send_to_conversation(conversation_id, event, exclude_user_id=current_user.id)
+        
+    return {"status": "success"}

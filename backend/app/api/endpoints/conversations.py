@@ -158,6 +158,7 @@ async def create_group(
     conv = Conversation(
         type="group",
         name=data.name,
+        avatar_url=data.avatar_url,
         created_by=current_user.id
     )
     db.add(conv)
@@ -214,9 +215,11 @@ async def update_group(
     if not p_res.scalars().first():
         raise HTTPException(status_code=403, detail="Only admins can modify the group")
 
-    # Update name
+    # Update fields
     if data.name:
         conv.name = data.name
+    if data.avatar_url is not None:
+        conv.avatar_url = data.avatar_url
 
     # Add participants
     if data.add_participant_ids:

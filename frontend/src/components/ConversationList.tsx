@@ -18,6 +18,7 @@ interface Conversation {
   id: string;
   type: 'direct' | 'group';
   name?: string;
+  avatar_url?: string;
   last_message_at?: string;
   last_message_preview?: string;
   unread_count?: number;
@@ -55,7 +56,12 @@ export function ConversationList({ onSelect, selectedId }: Props) {
   useEffect(() => { fetchConversations(); }, []);
 
   useEffect(() => {
-    const u1 = subscribe('message.new', () => fetchConversations());
+    const u1 = subscribe('message.new', (payload: any) => {
+      fetchConversations();
+      if (payload && payload.sender_id !== user?.id) {
+        api.post(`/conversations/${payload.conversation_id}/delivered`, { message_id: payload.id }).catch(console.error);
+      }
+    });
     const u2 = subscribe('conversation.added', () => { fetchConversations(); toast.info('You were added to a new group!'); });
     const u3 = subscribe('conversation.updated', () => fetchConversations());
     const u4 = subscribe('presence.update', (payload) => {
@@ -201,15 +207,20 @@ export function ConversationList({ onSelect, selectedId }: Props) {
               const online = isOnline(conv);
               const isGroup = conv.type === 'group';
               const displayUnread = isSelected ? 0 : conv.unread_count;
+              const other = conv.participants.find(p => p.user_id !== user?.id);
+              const avatar = isGroup ? conv.avatar_url : other?.user?.avatar_url;
 
               return (
-                <div key={conv.id} onClick={() => onSelect(conv)} className={`conv-item ${isSelected ? 'active' : ''}`}
+                <div key={conv.id} onClick={() => {
+                  setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c));
+                  onSelect(conv);
+                }} className={`conv-item ${isSelected ? 'active' : ''}`}
                   style={{ padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
 
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isGroup ? '1.2rem' : '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent', transition: 'border-color 0.2s' }}>
-                      {isGroup ? '👥' : getChatName(conv).charAt(0).toUpperCase()}
+                    <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isGroup ? '1.2rem' : '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent', transition: 'border-color 0.2s', overflow: 'hidden' }}>
+                      {avatar ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (isGroup ? '👥' : getChatName(conv).charAt(0).toUpperCase())}
                     </div>
                     {!isGroup && online && <div className="online-dot" style={{ position: 'absolute', bottom: '1px', right: '1px' }} />}
                   </div>

@@ -59,6 +59,7 @@ export function MessagePane({ conversation }: Props) {
   // Group editing state
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [avatarInput, setAvatarInput] = useState('');
   const [addSearch, setAddSearch] = useState('');
   const [addSearchResults, setAddSearchResults] = useState<any[]>([]);
   const [disappearingMode, setDisappearingMode] = useState(false);
@@ -273,40 +274,77 @@ export function MessagePane({ conversation }: Props) {
 
       {/* ===== HEADER ===== */}
       <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', gap: '0.85rem', zIndex: 10, flexShrink: 0 }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)' }}>
-          {isGroup ? '👥' : getChatName().charAt(0).toUpperCase()}
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', overflow: 'hidden' }}>
+          {(() => {
+            const active = groupInfoConv || conversation;
+            const avatar = isGroup ? active.avatar_url : active.participants.find((p: any) => p.user_id !== user?.id)?.user?.avatar_url;
+            return avatar ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (isGroup ? '👥' : getChatName().charAt(0).toUpperCase());
+          })()}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {editingName ? (
-              <input 
-                className="input-field" 
-                value={nameInput} 
-                onChange={e => setNameInput(e.target.value)} 
-                onKeyDown={async e => {
-                  if (e.key === 'Enter') {
-                    if (!nameInput.trim()) return; 
-                    try { 
-                      const u = await api.put(`/conversations/${conversation.id}/group`, { name: nameInput.trim() }); 
-                      setGroupInfoConv(u); 
-                      setEditingName(false); 
-                      toast.success('Group renamed'); 
-                    } catch { 
-                      toast.error('Failed'); 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <input 
+                  className="input-field" 
+                  value={nameInput} 
+                  placeholder="Group Name"
+                  onChange={e => setNameInput(e.target.value)} 
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter') {
+                      if (!nameInput.trim()) return; 
+                      try { 
+                        const payload: any = { name: nameInput.trim() };
+                        if (avatarInput.trim()) payload.avatar_url = avatarInput.trim();
+                        const u = await api.put(`/conversations/${conversation.id}/group`, payload); 
+                        setGroupInfoConv(u); 
+                        setEditingName(false); 
+                        toast.success('Group updated'); 
+                      } catch { 
+                        toast.error('Failed'); 
+                      }
+                    } else if (e.key === 'Escape') {
+                      setEditingName(false);
                     }
-                  } else if (e.key === 'Escape') {
-                    setEditingName(false);
-                  }
-                }}
-                style={{ padding: '0.2rem 0.5rem', fontSize: '1rem', fontWeight: 600, width: '200px' }} 
-                autoFocus 
-                onBlur={() => setEditingName(false)}
-              />
+                  }}
+                  style={{ padding: '0.2rem 0.5rem', fontSize: '1rem', fontWeight: 600, width: '200px' }} 
+                  autoFocus 
+                />
+                <input 
+                  className="input-field" 
+                  value={avatarInput} 
+                  placeholder="Avatar URL (Optional)"
+                  onChange={e => setAvatarInput(e.target.value)} 
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter') {
+                      if (!nameInput.trim()) return; 
+                      try { 
+                        const payload: any = { name: nameInput.trim() };
+                        if (avatarInput.trim()) payload.avatar_url = avatarInput.trim();
+                        const u = await api.put(`/conversations/${conversation.id}/group`, payload); 
+                        setGroupInfoConv(u); 
+                        setEditingName(false); 
+                        toast.success('Group updated'); 
+                      } catch { 
+                        toast.error('Failed'); 
+                      }
+                    } else if (e.key === 'Escape') {
+                      setEditingName(false);
+                    }
+                  }}
+                  style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', width: '200px' }} 
+                />
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Press Enter to save</span>
+              </div>
             ) : (
               <>
                 <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>{getChatName()}</h2>
                 {isGroup && isAdmin && (
-                  <button onClick={() => { setNameInput(groupInfoConv?.name || conversation.name || ''); setEditingName(true); }} className="btn-ghost" style={{ padding: '0.2rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => { 
+                    setNameInput(groupInfoConv?.name || conversation.name || ''); 
+                    setAvatarInput((groupInfoConv as any)?.avatar_url || (conversation as any).avatar_url || '');
+                    setEditingName(true); 
+                  }} className="btn-ghost" style={{ padding: '0.2rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }}>
                     <Pencil size={14} />
                   </button>
                 )}
@@ -351,7 +389,9 @@ export function MessagePane({ conversation }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.75rem' }}>
               {dc.participants.map(p => (
                 <div key={p.user_id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.25rem 0' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-primary)', flexShrink: 0 }}>{p.user?.display_name?.charAt(0).toUpperCase() || '?'}</div>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-primary)', flexShrink: 0, overflow: 'hidden' }}>
+                    {p.user?.avatar_url ? <img src={p.user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (p.user?.display_name?.charAt(0).toUpperCase() || '?')}
+                  </div>
                   <span style={{ flex: 1, color: 'var(--text-primary)', fontSize: '0.85rem' }}>{p.user?.display_name}</span>
                   {p.role === 'admin' && <span style={{ fontSize: '0.65rem', color: 'var(--accent-purple)', background: 'var(--accent-purple-dim)', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>Admin</span>}
                   {p.user?.is_online && <span className="online-dot" style={{ width: '7px', height: '7px' }} />}
