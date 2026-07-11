@@ -1,0 +1,57 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Database
+app.db
+*.sqlite3
+
+# Logs
+logs
+*.log
+
+# Node.js / Next.js
+node_modules/
+.next/
+.env.local
+.env.*.local
+npm-debug.log*
+
+# Misc
+debug.txt
