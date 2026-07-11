@@ -9,7 +9,7 @@ interface Props {
   onClose: () => void;
 }
 
-type Tab = 'profile' | 'privacy' | 'notifications' | 'appearance';
+type Tab = 'profile' | 'privacy' | 'notifications' | 'appearance' | 'devices' | 'encryption';
 
 export function SettingsModal({ onClose }: Props) {
   const { user, checkAuth } = useAuth();
