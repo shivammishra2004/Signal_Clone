@@ -77,11 +77,10 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
       backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center'
     }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div onClick={e => e.stopPropagation()} className="modal-content-pad" style={{
         backgroundColor: 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-xl)',
-        padding: '2rem',
         width: '420px',
         maxWidth: '95vw',
         boxShadow: 'var(--shadow-lg)'

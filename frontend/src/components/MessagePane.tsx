@@ -5,7 +5,7 @@ import { api } from '@/api';
 import { useWebSocket } from '@/WebSocketContext';
 import { useAuth } from '@/AuthContext';
 import { useToast } from '@/ToastContext';
-import { Phone, Video, Paperclip, Timer, Pencil, Trash2, Reply, SmilePlus, Send, X } from 'lucide-react';
+import { Phone, Video, Paperclip, Timer, Pencil, Trash2, Reply, SmilePlus, Send, X, ChevronLeft } from 'lucide-react';
 
 interface ReactionSummary {
   emoji: string;
@@ -42,11 +42,12 @@ interface Conversation {
 
 interface Props {
   conversation: Conversation | null;
+  onBack?: () => void;
 }
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
-export function MessagePane({ conversation }: Props) {
+export function MessagePane({ conversation, onBack }: Props) {
   const { user } = useAuth();
   const { subscribe, sendMessage } = useWebSocket();
   const toast = useToast();
@@ -168,7 +169,7 @@ export function MessagePane({ conversation }: Props) {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, typingUsers]);
+  }, [messages.length, typingUsers]);
 
   const fetchMessages = async () => {
     try {
@@ -275,7 +276,12 @@ export function MessagePane({ conversation }: Props) {
 
       {/* ===== HEADER ===== */}
       <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', gap: '0.85rem', zIndex: 10, flexShrink: 0 }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', overflow: 'hidden' }}>
+        {onBack && (
+          <button onClick={onBack} className="btn-ghost mobile-only flex" style={{ padding: '0.3rem', marginRight: '-0.3rem', display: 'flex', alignItems: 'center' }}>
+            <ChevronLeft size={22} />
+          </button>
+        )}
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', overflow: 'hidden', flexShrink: 0 }}>
           {(() => {
             const active = groupInfoConv || conversation;
             const avatar = isGroup ? active.avatar_url : active.participants.find((p: any) => p.user_id !== user?.id)?.user?.avatar_url;
@@ -380,7 +386,7 @@ export function MessagePane({ conversation }: Props) {
       {showGroupInfo && isGroup && (() => {
         const dc = groupInfoConv || conversation;
         return (
-          <div style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '1rem 1.5rem', maxHeight: '300px', overflowY: 'auto', flexShrink: 0 }}>
+          <div style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '1rem 1.5rem', maxHeight: '40vh', overflowY: 'auto', flexShrink: 0 }}>
             <div style={{ marginBottom: '0.75rem' }}>
               <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, marginBottom: '0.35rem' }}>Group Name</p>
               <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dc.name || 'Unnamed'}</span>
@@ -435,6 +441,7 @@ export function MessagePane({ conversation }: Props) {
             <div key={msg.id} 
                  onMouseEnter={() => setHoveredMsgId(msg.id)}
                  onMouseLeave={() => setHoveredMsgId(null)}
+                 onClick={(e) => { e.stopPropagation(); setHoveredMsgId(hoveredMsgId === msg.id ? null : msg.id); }}
                  style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start', position: 'relative', marginBottom: hasReactions ? '1.2rem' : '0.15rem' }}>
 
               {showSender && (
@@ -556,10 +563,10 @@ export function MessagePane({ conversation }: Props) {
       </div>
 
       {/* ===== INPUT AREA ===== */}
-      <div style={{ borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', flexShrink: 0 }}>
+      <div style={{ backgroundColor: 'transparent', flexShrink: 0, padding: '0 1rem 1rem' }}>
         {/* Reply preview bar */}
         {replyTo && (
-          <div style={{ padding: '0.5rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', borderBottom: 'none' }}>
             <div style={{ borderLeft: '3px solid var(--accent-primary)', paddingLeft: '0.6rem', flex: 1, overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-primary)' }}>Replying to {getSenderName(replyTo.sender_id)}</span>
@@ -574,21 +581,20 @@ export function MessagePane({ conversation }: Props) {
           </div>
         )}
 
-        <div style={{ padding: '1rem 1.5rem' }}>
-          <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div>
+          <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '0.4rem 0.5rem 0.4rem 0.5rem', borderRadius: replyTo ? '0 0 var(--radius-lg) var(--radius-lg)' : 'var(--radius-full)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', transition: 'border-radius 0.2s' }}>
             <button type="button" onClick={() => toast.info('Attachments coming soon!')} className="btn-ghost" style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
               <Paperclip size={20} />
             </button>
             <input
               ref={inputRef}
-              className="input-field"
               type="text"
               value={inputText}
               onChange={handleTyping}
               placeholder={disappearingMode ? "Disappearing message..." : "Type a message..."}
-              style={{ flex: 1, padding: '0.7rem 1.2rem', borderRadius: 'var(--radius-full)' }}
+              style={{ flex: 1, padding: '0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.95rem', fontFamily: 'inherit' }}
             />
-            <button type="submit" className="btn-primary" disabled={!inputText.trim()} style={{ borderRadius: '50%', width: '42px', height: '42px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button type="submit" className="btn-primary" disabled={!inputText.trim()} style={{ borderRadius: '50%', width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Send size={18} />
             </button>
           </form>

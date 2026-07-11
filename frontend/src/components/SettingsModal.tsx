@@ -43,13 +43,13 @@ export function SettingsModal({ onClose }: Props) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-      <div className="animate-scale-in" style={{ width: '100%', maxWidth: '600px', backgroundColor: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-color)', display: 'flex', height: '70vh', minHeight: '400px', overflow: 'hidden' }}>
+      <div className="animate-scale-in settings-modal-layout" style={{ width: '100%', maxWidth: '600px', backgroundColor: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-color)', height: '70vh', minHeight: '400px', overflow: 'hidden' }}>
         
         {/* Sidebar Tabs */}
-        <div style={{ width: '200px', borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', padding: '1rem 0' }}>
+        <div className="settings-sidebar">
           <div style={{ padding: '0 1rem 1rem', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>Settings</div>
           
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="settings-tabs-container">
             {[
               { id: 'profile', icon: '👤', label: 'Profile' },
               { id: 'privacy', icon: '🔒', label: 'Privacy' },
@@ -61,14 +61,7 @@ export function SettingsModal({ onClose }: Props) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as Tab)}
-                style={{
-                  background: activeTab === tab.id ? 'var(--bg-tertiary)' : 'transparent',
-                  border: 'none', textAlign: 'left', padding: '0.75rem 1.5rem',
-                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  cursor: 'pointer', fontSize: '0.88rem', fontWeight: activeTab === tab.id ? 600 : 400,
-                  borderLeft: activeTab === tab.id ? '3px solid var(--accent-primary)' : '3px solid transparent',
-                  display: 'flex', gap: '0.75rem', alignItems: 'center'
-                }}
+                className={`settings-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
               >
                 <span>{tab.icon}</span> {tab.label}
               </button>

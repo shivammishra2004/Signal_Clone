@@ -45,79 +45,65 @@ export default function AppHome() {
   }, []);
 
   return (
-    <div className="app-container" style={{ position: 'relative', background: 'var(--bg-primary)' }}>
-
-      {/* Mobile overlay backdrop */}
-      {showSidebar && (
-        <div
-          onClick={() => setShowSidebar(false)}
-          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 400, display: 'none' }}
-          className="mobile-backdrop"
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`sidebar ${showSidebar ? 'open' : ''}`} style={{ flexShrink: 0 }}>
-        <ConversationList
-          onSelect={handleSelect}
-          selectedId={selectedConversation?.id}
-        />
-      </div>
-
-      {/* Chat Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-
-        {/* Mobile top bar */}
-        <div style={{ display: 'none' }} className="mobile-topbar">
-          <button onClick={() => setShowSidebar(v => !v)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.75rem', fontSize: '1.2rem' }}>
-            ☰
-          </button>
+    <div className="app-container" style={{ position: 'relative' }}>
+      <div className="desktop-app-layout">
+        {/* Sidebar */}
+        <div className={`sidebar ${selectedConversation ? 'mobile-hidden' : ''}`}>
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <ConversationList
+              onSelect={handleSelect}
+              selectedId={selectedConversation?.id}
+            />
+          </div>
+          {/* User Badge in sidebar */}
+          <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+            <div 
+              onClick={() => setShowSettings(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-color)',
+                padding: '0.4rem 0.6rem 0.4rem 0.4rem',
+                borderRadius: 'var(--radius-full)',
+                boxShadow: 'var(--shadow-xs)',
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+            }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary), #6B7FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
+                {user?.display_name?.charAt(0).toUpperCase() || '?'}
+              </div>
+              <span style={{ color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user?.display_name}
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}
+                title="Settings"
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+              >
+                <Settings size={16} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); logout(); }}
+                title="Sign out"
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-danger)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <MessagePane
-          conversation={selectedConversation}
-          key={selectedConversation?.id}
-        />
-      </div>
-
-      {/* Bottom-left user badge */}
-      <div style={{ position: 'absolute', bottom: '1rem', left: '1rem', zIndex: 100 }}>
-        <div 
-          onClick={() => setShowSettings(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(16px)',
-            border: '1px solid var(--glass-border)',
-            padding: '0.35rem 0.6rem 0.35rem 0.4rem',
-            borderRadius: 'var(--radius-full)',
-            boxShadow: 'var(--shadow-xs)',
-            fontSize: '0.8rem',
-            cursor: 'pointer'
-        }}>
-          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary), #6B7FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
-            {user?.display_name?.charAt(0).toUpperCase() || '?'}
-          </div>
-          <span style={{ color: 'var(--text-secondary)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user?.display_name}
-          </span>
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}
-            title="Settings"
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.1rem 0.2rem', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          >
-            <Settings size={14} />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); logout(); }}
-            title="Sign out"
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.1rem 0.2rem', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-danger)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          >
-            <LogOut size={14} />
-          </button>
+        {/* Chat Area */}
+        <div className={`message-pane-container ${selectedConversation ? 'mobile-active' : ''}`}>
+          <MessagePane
+            conversation={selectedConversation}
+            key={selectedConversation?.id}
+            onBack={() => setSelectedConversation(null)}
+          />
         </div>
       </div>
 

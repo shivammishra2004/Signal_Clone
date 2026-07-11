@@ -141,7 +141,7 @@ export function ConversationList({ onSelect, selectedId }: Props) {
         />
       )}
 
-      <div style={{ width: '300px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-secondary)', height: '100%' }}>
+      <div style={{ flex: 1, borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-secondary)', height: '100%' }}>
 
         {/* Header */}
         <div style={{ padding: '1.25rem 1rem 1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(20px)' }}>
@@ -215,7 +215,7 @@ export function ConversationList({ onSelect, selectedId }: Props) {
                   setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c));
                   onSelect(conv);
                 }} className={`conv-item ${isSelected ? 'active' : ''}`}
-                  style={{ padding: '0.85rem 1rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  style={{ padding: '0.85rem 1rem', margin: '0.25rem 0.5rem', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
 
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>

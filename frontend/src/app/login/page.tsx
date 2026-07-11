@@ -86,7 +86,7 @@ export default function LoginPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Private, real-time encrypted messaging</p>
         </div>
 
-        <div className="glass-panel" style={{ padding: '2rem' }}>
+        <div className="glass-panel modal-content-pad" style={{}}>
           {/* Step indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.75rem' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-primary)' }} />
