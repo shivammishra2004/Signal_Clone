@@ -12,7 +12,7 @@ interface Props {
 type Tab = 'profile' | 'privacy' | 'notifications' | 'appearance';
 
 export function SettingsModal({ onClose }: Props) {
-  const { user, mutate } = useAuth();
+  const { user, checkAuth } = useAuth();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   
@@ -30,7 +30,7 @@ export function SettingsModal({ onClose }: Props) {
       
       if (Object.keys(data).length > 0) {
         await api.patch('/auth/me', data);
-        await mutate(); // Refresh user context
+        await checkAuth(); // Refresh user context
         toast.success('Profile updated');
       }
     } catch (err) {
