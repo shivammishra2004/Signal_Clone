@@ -28,13 +28,14 @@ interface Message {
 interface Participant {
   user_id: string;
   role: string;
-  user: { id: string; display_name: string; is_online: boolean; username?: string; };
+  user: { id: string; display_name: string; is_online: boolean; username?: string; avatar_url?: string; };
 }
 
 interface Conversation {
   id: string;
   type: 'direct' | 'group';
   name?: string;
+  avatar_url?: string;
   created_by?: string;
   participants: Participant[];
 }

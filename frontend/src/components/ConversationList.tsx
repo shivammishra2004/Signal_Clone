@@ -11,7 +11,7 @@ import { Camera, Plus, MessageSquare, Users } from 'lucide-react';
 interface Participant {
   user_id: string;
   role: string;
-  user: { id: string; display_name: string; is_online: boolean; username?: string; };
+  user: { id: string; display_name: string; is_online: boolean; username?: string; avatar_url?: string; };
 }
 
 interface Conversation {
