@@ -141,7 +141,7 @@ export function ConversationList({ onSelect, selectedId }: Props) {
         />
       )}
 
-      <div style={{ flex: 1, borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-secondary)', height: '100%' }}>
+      <div style={{ flex: 1, borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-secondary)', height: '100%', position: 'relative' }}>
 
         {/* Header */}
         <div style={{ padding: '1.25rem 1rem 1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(20px)' }}>
@@ -156,26 +156,6 @@ export function ConversationList({ onSelect, selectedId }: Props) {
             <button onClick={() => toast.info('Stories coming soon!')} className="btn-ghost" style={{ padding: '0.45rem', borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
               <Camera size={20} />
             </button>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowNewMenu(v => !v)} className="btn-primary" style={{ padding: '0.45rem 0.85rem', fontSize: '0.78rem', borderRadius: 'var(--radius-full)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Plus size={14} /> New
-              </button>
-              {showNewMenu && (
-              <div style={{ position: 'absolute', top: '110%', right: 0, zIndex: 300, backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden', minWidth: '170px', boxShadow: 'var(--shadow-lg)', backdropFilter: 'blur(20px)' }}>
-                {[
-                  { icon: <MessageSquare size={16} />, label: 'Direct Chat', action: createNewDirect },
-                  { icon: <Users size={16} />, label: 'Group Chat', action: () => { setShowNewMenu(false); setShowGroupModal(true); } }
-                ].map(item => (
-                  <button key={item.label} onClick={item.action} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.7rem 1rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                  >
-                    <span>{item.icon}</span> {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-            </div>
           </div>
         </div>
 
@@ -253,6 +233,28 @@ export function ConversationList({ onSelect, selectedId }: Props) {
             })
           )}
         </div>
+
+        {/* Floating Action Button for New Chat */}
+        <button onClick={() => setShowNewMenu(v => !v)} className="fab" title="New Chat">
+          <MessageSquare size={24} />
+        </button>
+
+        {/* FAB Menu */}
+        {showNewMenu && (
+          <div className="animate-fade-in" style={{ position: 'absolute', bottom: '4.5rem', right: '1.25rem', zIndex: 300, backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden', minWidth: '170px', boxShadow: 'var(--shadow-lg)' }}>
+            {[
+              { icon: <MessageSquare size={16} />, label: 'Direct Chat', action: createNewDirect },
+              { icon: <Users size={16} />, label: 'Group Chat', action: () => { setShowNewMenu(false); setShowGroupModal(true); } }
+            ].map(item => (
+              <button key={item.label} onClick={item.action} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.8rem 1rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                <span>{item.icon}</span> {item.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

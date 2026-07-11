@@ -207,7 +207,7 @@ h1, h2, h3, h4, h5, h6 {
    ======================== */
 .app-container {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background: radial-gradient(circle at top left, rgba(79, 128, 255, 0.08), transparent 40%),
@@ -521,23 +521,45 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid var(--border-color);
   }
   .settings-tabs-container {
-    flex-direction: row !important;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-  .settings-tabs-container::-webkit-scrollbar {
-    height: 4px;
+    flex-direction: column !important;
+    overflow-x: visible;
+    padding-bottom: 0;
   }
   .settings-tab-btn {
-    border-left: none !important;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
+    border-left: 3px solid transparent !important;
+    border-bottom: none !important;
+    padding: 1rem 1.5rem !important;
+    font-size: 1rem !important;
   }
   .settings-tab-btn.active {
-    border-bottom: 3px solid var(--accent-primary) !important;
+    background: transparent !important;
+    border-left: 3px solid transparent !important;
+  }
+  
+  .settings-sidebar.mobile-detail-active {
+    display: none;
+  }
+  .settings-content-area {
+    display: none;
+    padding: 1rem 1.25rem !important;
+  }
+  .settings-content-area.mobile-detail-active {
+    display: block;
+    flex: 1;
   }
   .modal-content-pad {
     padding: 1.25rem !important;
+  }
+  
+  /* Full screen modals on mobile */
+  .settings-modal-layout, .create-group-modal {
+    height: 100dvh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -582,6 +604,47 @@ h1, h2, h3, h4, h5, h6 {
   border-left: 3px solid var(--accent-primary);
 }
 
+.settings-content-area {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  position: relative;
+}
+
 .modal-content-pad {
   padding: 2rem;
+}
+
+/* Floating Action Button (WhatsApp Style) */
+.fab {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(79, 128, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  z-index: 50;
+  transition: transform 0.2s, background 0.2s;
+}
+.fab:hover {
+  transform: scale(1.05);
+  background: var(--accent-primary-hover);
+}
+.fab:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .fab {
+    bottom: 1rem;
+    right: 1rem;
+  }
 }

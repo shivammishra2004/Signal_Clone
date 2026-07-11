@@ -275,10 +275,10 @@ export function MessagePane({ conversation, onBack }: Props) {
       onClick={() => setActiveReactionMsgId(null)}>
 
       {/* ===== HEADER ===== */}
-      <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', gap: '0.85rem', zIndex: 10, flexShrink: 0 }}>
+      <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '0.85rem', zIndex: 10, flexShrink: 0 }}>
         {onBack && (
-          <button onClick={onBack} className="btn-ghost mobile-only flex" style={{ padding: '0.3rem', marginRight: '-0.3rem', display: 'flex', alignItems: 'center' }}>
-            <ChevronLeft size={22} />
+          <button onClick={onBack} className="btn-ghost mobile-only flex" style={{ padding: '0.4rem', marginRight: '-0.4rem', display: 'flex', alignItems: 'center', borderRadius: '50%' }}>
+            <ChevronLeft size={28} color="var(--accent-primary)" />
           </button>
         )}
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: isGroup ? 'linear-gradient(135deg, rgba(160,96,255,0.3), rgba(79,128,255,0.2))' : 'linear-gradient(135deg, rgba(79,128,255,0.25), rgba(107,127,255,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: isGroup ? 'var(--accent-purple)' : 'var(--accent-primary)', overflow: 'hidden', flexShrink: 0 }}>
@@ -563,7 +563,7 @@ export function MessagePane({ conversation, onBack }: Props) {
       </div>
 
       {/* ===== INPUT AREA ===== */}
-      <div style={{ backgroundColor: 'transparent', flexShrink: 0, padding: '0 1rem 1rem' }}>
+      <div style={{ backgroundColor: 'var(--bg-secondary)', flexShrink: 0, padding: '0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom))', borderTop: '1px solid var(--border-color)' }}>
         {/* Reply preview bar */}
         {replyTo && (
           <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'var(--glass-bg)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0', borderBottom: 'none' }}>
@@ -582,19 +582,19 @@ export function MessagePane({ conversation, onBack }: Props) {
         )}
 
         <div>
-          <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '0.4rem 0.5rem 0.4rem 0.5rem', borderRadius: replyTo ? '0 0 var(--radius-lg) var(--radius-lg)' : 'var(--radius-full)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', transition: 'border-radius 0.2s' }}>
+          <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'var(--bg-tertiary)', padding: '0.3rem 0.5rem', borderRadius: replyTo ? '0 0 var(--radius-xl) var(--radius-xl)' : 'var(--radius-full)', border: '1px solid var(--border-color)' }}>
             <button type="button" onClick={() => toast.info('Attachments coming soon!')} className="btn-ghost" style={{ padding: '0.5rem', borderRadius: '50%', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-              <Paperclip size={20} />
+              <Paperclip size={22} />
             </button>
             <input
               ref={inputRef}
               type="text"
               value={inputText}
               onChange={handleTyping}
-              placeholder={disappearingMode ? "Disappearing message..." : "Type a message..."}
-              style={{ flex: 1, padding: '0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.95rem', fontFamily: 'inherit' }}
+              placeholder={disappearingMode ? "Disappearing message..." : "Message"}
+              style={{ flex: 1, padding: '0.6rem 0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '1rem', fontFamily: 'inherit' }}
             />
-            <button type="submit" className="btn-primary" disabled={!inputText.trim()} style={{ borderRadius: '50%', width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button type="submit" className="btn-primary" disabled={!inputText.trim()} style={{ borderRadius: '50%', width: '42px', height: '42px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'none' }}>
               <Send size={18} />
             </button>
           </form>
