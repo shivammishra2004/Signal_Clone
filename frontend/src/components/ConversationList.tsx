@@ -53,7 +53,16 @@ export function ConversationList({ onSelect, selectedId }: Props) {
   const { user } = useAuth();
   const toast = useToast();
 
-  useEffect(() => { fetchConversations(); }, []);
+  useEffect(() => {
+    const cached = localStorage.getItem('conversations_cache');
+    if (cached) {
+      try {
+        setConversations(JSON.parse(cached));
+        setLoading(false);
+      } catch (e) {}
+    }
+    fetchConversations();
+  }, []);
 
   useEffect(() => {
     const u1 = subscribe('message.new', (payload: any) => {
@@ -90,6 +99,7 @@ export function ConversationList({ onSelect, selectedId }: Props) {
     try {
       const data = await api.get('/conversations/');
       setConversations(data);
+      localStorage.setItem('conversations_cache', JSON.stringify(data));
     } catch { } finally { setLoading(false); }
   };
 

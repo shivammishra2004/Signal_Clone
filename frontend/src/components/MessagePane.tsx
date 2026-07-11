@@ -19,7 +19,7 @@ interface Message {
   sender_id: string;
   content: string;
   created_at: string;
-  status?: 'sent' | 'delivered' | 'read';
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
   reply_to_id?: string;
   reply_to_preview?: string;
   reactions?: ReactionSummary[];
@@ -75,6 +75,13 @@ export function MessagePane({ conversation, onBack }: Props) {
 
   useEffect(() => {
     if (conversation) {
+      const cached = localStorage.getItem(`messages_${conversation.id}`);
+      if (cached) {
+        try { setMessages(JSON.parse(cached)); } catch(e) {}
+      } else {
+        setMessages([]);
+      }
+      
       fetchMessages();
       setTypingUsers(new Set());
       setShowGroupInfo(false);
@@ -92,12 +99,23 @@ export function MessagePane({ conversation, onBack }: Props) {
     }
   }, [conversation]);
 
+  // Sync messages to local storage whenever they change
+  useEffect(() => {
+    if (conversation && messages.length > 0) {
+      // Store the last 50 messages to keep cache lightweight
+      localStorage.setItem(`messages_${conversation.id}`, JSON.stringify(messages.slice(-50)));
+    }
+  }, [messages, conversation]);
+
   useEffect(() => {
     if (!conversation) return;
 
     const u1 = subscribe('message.new', (payload: Message) => {
       if (payload.conversation_id === conversation.id) {
-        setMessages(prev => [...prev, payload]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === payload.id)) return prev;
+          return [...prev, payload];
+        });
         // Auto-read if we are currently viewing this chat and someone else sent it.
         // This also sets last_delivered_message_id on our participant record.
         if (payload.sender_id !== user?.id) {
@@ -189,17 +207,42 @@ export function MessagePane({ conversation, onBack }: Props) {
     e.preventDefault();
     if (!inputText.trim() || !conversation) return;
     const content = inputText.trim();
+    const currentReplyTo = replyTo;
+    
     setInputText('');
+    setReplyTo(null);
     sendMessage('typing.stop', { conversation_id: conversation.id });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
+    // Optimistic UI insert
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      conversation_id: conversation.id,
+      sender_id: user!.id,
+      content,
+      created_at: new Date().toISOString(),
+      status: 'sending',
+    };
+    if (currentReplyTo) {
+      optimisticMessage.reply_to_id = currentReplyTo.id;
+      optimisticMessage.reply_to_preview = currentReplyTo.content;
+    }
+
+    setMessages(prev => [...prev, optimisticMessage]);
+    
+    // Smooth scroll to bottom instantly
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 10);
+
     try {
       const body: any = { content };
-      if (replyTo) body.reply_to_id = replyTo.id;
+      if (currentReplyTo) body.reply_to_id = currentReplyTo.id;
       const newMsg = await api.post(`/conversations/${conversation.id}/messages`, body);
-      setMessages(prev => [...prev, newMsg]);
-      setInputText('');
-      setReplyTo(null);
+      
+      // Replace optimistic message with actual message
+      setMessages(prev => prev.map(msg => msg.id === tempId ? newMsg : msg));
 
       // Disappearing mode functionality
       if (disappearingMode) {
@@ -210,6 +253,9 @@ export function MessagePane({ conversation, onBack }: Props) {
     } catch (err) {
       toast.error('Failed to send message');
       console.error(err);
+      // Remove optimistic message on failure
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      setInputText(content); // Restore input text so user can try again
     }
   };
 
@@ -478,9 +524,12 @@ export function MessagePane({ conversation, onBack }: Props) {
                       fontSize: '0.75rem', 
                       color: msg.status === 'read' ? 'var(--accent-success)' : 'inherit',
                       textShadow: msg.status === 'read' ? '0 0 2px rgba(46,213,115,0.4)' : 'none',
-                      fontWeight: msg.status === 'read' ? 800 : 'normal'
+                      fontWeight: msg.status === 'read' ? 800 : 'normal',
+                      opacity: msg.status === 'sending' ? 0.6 : 1,
+                      display: 'inline-flex',
+                      alignItems: 'center'
                     }}>
-                      {msg.status === 'sent' || !msg.status ? '✓' : '✓✓'}
+                      {msg.status === 'sending' ? '🕒' : (msg.status === 'sent' || !msg.status ? '✓' : '✓✓')}
                     </span>
                   )}
                 </div>
